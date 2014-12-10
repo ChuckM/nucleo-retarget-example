@@ -1,4 +1,4 @@
-Nucleo F0 Retargeting Example
+Nucleo-F411RE Retargeting Example
 -----------------------------
 
 As the Nucleo boards provide access to one of the STM32's USARTS 
