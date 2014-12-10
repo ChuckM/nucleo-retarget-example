@@ -40,7 +40,9 @@ static volatile uint32_t delay_timer;
 void
 sys_tick_handler(void) {
 	system_millis++;
+#ifdef VALIDATE_SYSTICK_RATE
 	gpio_toggle(GPIOC, GPIO3);
+#endif
 	if (delay_timer > 0) {
 		delay_timer--;
 	}
@@ -361,6 +363,10 @@ static void SystemInit() {
 	BOARD_GPIO_SETUP;
 	BOARD_USART_SETUP(115200);
 
+#ifdef VALIDATE_SYSTICK_RATE
+	rcc_periph_clock_enable(RCC_GPIOC);
+	gpio_mode_setup(GPIOC, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO3);
+#endif
 	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
 	STK_CVR = 0;
 	systick_set_reload(rcc_ahb_frequency / 1000);

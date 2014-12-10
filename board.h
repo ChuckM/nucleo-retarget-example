@@ -46,4 +46,9 @@
 
 #define BOARD_LED_GPIO	GPIOA
 #define BOARD_LED_PIN	GPIO5
+
+/* Toggle PC3 in the systick handler, should have a 500Hz squarewave on it
+ * if the clocks are set correctly.
+ */
+#define VALIDATE_SYSTICK_RATE
 #endif

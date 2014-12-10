@@ -63,8 +63,9 @@ main()
 		}
 	}
 	/* MS per flash */
-	done_time = (int) (2000 / flash_rate);
-	printf("The closest we can come will be %f flashes per second\n", 2000.0 / done_time);
+	done_time = (int) (500 / flash_rate);
+	printf("The closest we can come will be %f flashes per second\n", 500.0 / done_time);
+	printf("With %d MS between states\n", (int) done_time);
 	printf("Press ^C to restart this demo.\n");
 	while (1) {
 		msleep(done_time);
