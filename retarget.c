@@ -36,6 +36,7 @@ uint32_t mtime(void);
 static volatile uint32_t system_millis;
 static volatile uint32_t delay_timer;
 
+
 /* systick handler */
 void
 sys_tick_handler(void) {
@@ -62,12 +63,6 @@ mtime(void) {
 	return system_millis;
 }
 
-struct ringbuffer {
-	volatile char *buf;
-	volatile uint16_t nxt;
-	volatile uint16_t cur;
-};
-
 
 /* Interrupt driven character input */
 #define UART_BUF_SIZE	32
@@ -79,8 +74,6 @@ static volatile uint16_t cur_recv_ndx;
 static volatile char xmit_buf[UART_BUF_SIZE];
 static volatile uint16_t nxt_xmit_ndx;
 static volatile uint16_t cur_xmit_ndx;
-
-void board_usart_isr(void);
 
 /*
  * A bit hacky here, to avoid rewriting this same code for
@@ -103,8 +96,7 @@ void board_usart_isr(void);
  * function name (usart2_isr in the case of the F411RE)
  */
 void
-USART_ISR(void) {
-	uint32_t	reg;		// Lets us capture the top of stack
+BOARD_USART_ISR(void) {
 	if (USART_HAS_RXNE) {
 		recv_buf[nxt_recv_ndx] = USART_READ;
 		/*
@@ -112,9 +104,8 @@ USART_ISR(void) {
 		 * hit ^C
 		 */
 		if (recv_buf[nxt_recv_ndx] == '\03') {
-			volatile uint32_t *ret = (&reg) + 7;
-			*ret = (uint32_t)(&reset_handler);
-			return;
+			scb_reset_system();
+			return;	/* not actually reached */
 		}
 		nxt_recv_ndx = (nxt_recv_ndx + 1) % UART_BUF_SIZE;
 		/* note it doesn't watch for overflow */
@@ -289,11 +280,10 @@ uart_putc(char c) {
 }
 
 /* 
- * Called by libc functions
+ * Called by libc stdio functions
  */
 int 
-_write (int fd, char *ptr, int len)
-{
+_write (int fd, char *ptr, int len) {
 	int i = 0;
 
 	/* 
@@ -315,15 +305,14 @@ _write (int fd, char *ptr, int len)
 }
 
 /*
- * This function is a bit broken, it is always called with
- * len == 1. And since the default standard libraries do no
- * line editing, it makes for a very distasteful input experience.
- * So the line_buffer() code creates a buffer layer in front of
- * this code for a nice user experience.
+ * Depending on the implementation, this function can call
+ * with a buffer length of 1 to 1024. However it does no
+ * editing on console reading. So, the get_buffered_line code 
+ * above creates a buffer layer in front of this code for a 
+ * nice user experience.
  */
 int
-_read (int fd, char *ptr, int len)
-{
+_read (int fd, char *ptr, int len) {
 	int	my_len;
 
 	if (fd > 2) {
@@ -352,6 +341,7 @@ __attribute__((constructor))
 static void SystemInit() {
 
 #ifdef SCB_CPACR
+	/* if the chip has a co-processor (FPU) enable it */
 	SCB_CPACR |= SCB_CPACR_FULL * (SCB_CPACR_CP10 | SCB_CPACR_CP11);
 #endif
 
@@ -364,9 +354,15 @@ static void SystemInit() {
 	BOARD_USART_SETUP(115200);
 
 #ifdef VALIDATE_SYSTICK_RATE
+	/*
+	 *  Toggle PC3 at systick/2 rate. This is pin 37 on the CN7
+	 * connector, which is the lower left corner if USB is facing up
+	 * If things are working it toggles at ~500Hz
+	 */
 	rcc_periph_clock_enable(RCC_GPIOC);
 	gpio_mode_setup(GPIOC, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO3);
 #endif
+
 	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
 	STK_CVR = 0;
 	systick_set_reload(rcc_ahb_frequency / 1000);

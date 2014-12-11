@@ -18,26 +18,7 @@ main()
 	char buf[128];
 	uint32_t done_time;
 
-	printf("\nNUCLEO Retarget demo.\n");
-	switch (rcc_system_clock_source()) {
-		case 2:
-			printf("Running on PLL (%s Source) at %f Mhz\n", 
-					(RCC_PLLCFGR & RCC_PLLCFGR_PLLSRC) ? "HSE" : "HSI", 
-					rcc_ahb_frequency / 1000000.0);
-			break;
-		case 0:
-			printf("Running on HSI at %f Mhz\n", rcc_ahb_frequency / 1000000.0);
-			break;
-		case 1:
-			printf("Running on HSE at %f Mhz\n", rcc_ahb_frequency / 1000000.0);
-			break;
-		default:
-			printf("Unknown clock!\n");
-	}
-	printf("RCC Control Registers:\n");
-	printf("      RCC_CFGR is : 0x%08x\n", (unsigned int) RCC_CFGR);
-	printf("        RCC_CR is : 0x%08x\n", (unsigned int) RCC_CR);
-	printf("   RCC_PLLCFGR is : 0x%08x\n", (unsigned int) RCC_PLLCFGR);
+	printf("\nNUCLEO %s Retarget demo.\n", BOARD_NAME);
 
 	/* This is the LED on the board */
 	gpio_mode_setup(BOARD_LED_GPIO, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, BOARD_LED_PIN);

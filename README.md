@@ -1,4 +1,4 @@
-Nucleo-F411RE Retargeting Example
+Nucleo Retargeting Example
 -----------------------------
 
 As the Nucleo boards provide access to one of the STM32's USARTS 
@@ -17,3 +17,8 @@ the Debug portion of the Nucleo board, and a 1kHz system "tick" interrupt
 
 The main.c code simply prints out some numbers and creates a simple
 interactive dialog over the UART "console".
+
+There are two board files now, one for the NUCLEO-F030R8 and one for
+the NUCLEO-F411RE which differ by processor of course. The retarget file
+is also updated to use `scb_reset_system` which more reliably resets the
+board than hacking the stack does.
