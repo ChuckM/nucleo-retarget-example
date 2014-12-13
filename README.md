@@ -22,3 +22,6 @@ There are two board files now, one for the NUCLEO-F030R8 and one for
 the NUCLEO-F411RE which differ by processor of course. The retarget file
 is also updated to use `scb_reset_system` which more reliably resets the
 board than hacking the stack does.
+
+NB: As of this edit (12/12/14) you will need my additions to LOC3 to run
+this on the F0 or L0 Nucleo boards.
